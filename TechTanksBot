@@ -38,8 +38,11 @@ class Kill_The_Juke < RTanque::Bot::Brain
     projected = @enemy.enemy_position.clone
     time = @enemy.distance / (2 * SHELL_SPEED_FACTOR)
     if @angle_difference
-      new_angle = @enemy.enemy_heading + (@angle_difference * time / 2)
-      projected.move(new_angle, @enemy.enemy_speed * time)
+      angle_change = @angle_difference * time
+      new_angle = @enemy.enemy_heading + (angle_change / 2)
+      full_length = @enemy.enemy_speed * time
+      arc_length = (full_length/@angle_difference) * (Math.sqrt(2-(2*Math.cos(@angle_difference))))
+      projected.move(new_angle, arc_length)
     else
       projected.move(@enemy.enemy_heading, @enemy.enemy_speed * time)
     end
