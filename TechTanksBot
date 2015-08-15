@@ -21,7 +21,7 @@ class Kill_The_Juke < RTanque::Bot::Brain
   
   def get_best_enemy
     new_enemy = self.sensors.radar.min { |a,b| a.distance + a.enemy_health*2 <=> b.distance + b.enemy_health*2 }
-    if @enemy.enemy_name == new_enemy.enemy_name
+    if new_enemy != nil && @enemy != nil && @enemy.enemy_name == new_enemy.enemy_name
       @angle_difference = @enemy.enemy_heading.delta(new_enemy.enemy_heading)
     else
       @angle_difference = nil
@@ -37,9 +37,9 @@ class Kill_The_Juke < RTanque::Bot::Brain
     command.radar_heading = @enemy.heading
     projected = @enemy.enemy_position.clone
     time = @enemy.distance / (2 * SHELL_SPEED_FACTOR)
-    if @enemy
+    if @angle_difference
       new_angle = @enemy.enemy_heading + (@angle_difference * time / 2)
-      projected.move(@enemy.enemy_heading, @enemy.enemy_speed * time)
+      projected.move(new_angle, @enemy.enemy_speed * time)
     else
       projected.move(@enemy.enemy_heading, @enemy.enemy_speed * time)
     end
