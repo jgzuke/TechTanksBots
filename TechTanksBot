@@ -1,0 +1,38 @@
+#Example code
+class Kill_The_Juke < RTanque::Bot::Brain
+  def tick!
+    movement
+    shooting
+  end
+
+  def movement
+    command.speed = MAX_BOT_SPEED
+    command.heading = sensors.heading + RTanque::Heading.new_from_degrees(85)
+  end
+   
+  def shooting
+    get_best_enemy
+    if @enemy
+      shoot_enemy
+    else
+      find_enemy
+    end
+  end
+  
+  def get_best_enemy
+    @enemy = self.sensors.radar.min { |a,b| a.distance + a.enemy_health*2 <=> b.distance + b.enemy_health*2 }
+  end
+  
+  def find_enemy
+    command.radar_heading = sensors.radar_heading - 1
+  end
+  
+  def shoot_enemy
+    command.radar_heading = @enemy.heading
+    projected = @enemy.enemy_position.clone
+    time = @enemy.distance / (2 * SHELL_SPEED_FACTOR)
+    projected.move(@enemy.enemy_heading, @enemy.enemy_speed * time * 1)
+    command.turret_heading = sensors.position.heading(projected)
+    command.fire(2)
+  end
+end
