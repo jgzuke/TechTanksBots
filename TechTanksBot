@@ -20,7 +20,13 @@ class Kill_The_Juke < RTanque::Bot::Brain
   end
   
   def get_best_enemy
-    @enemy = self.sensors.radar.min { |a,b| a.distance + a.enemy_health*2 <=> b.distance + b.enemy_health*2 }
+    new_enemy = self.sensors.radar.min { |a,b| a.distance + a.enemy_health*2 <=> b.distance + b.enemy_health*2 }
+    if @enemy.enemy_name == new_enemy.enemy_name
+      @angle_difference = @enemy.enemy_heading.delta(new_enemy.enemy_heading)
+    else
+      @angle_difference = nil
+    end
+    @enemy = new_enemy
   end
   
   def find_enemy
@@ -31,7 +37,12 @@ class Kill_The_Juke < RTanque::Bot::Brain
     command.radar_heading = @enemy.heading
     projected = @enemy.enemy_position.clone
     time = @enemy.distance / (2 * SHELL_SPEED_FACTOR)
-    projected.move(@enemy.enemy_heading, @enemy.enemy_speed * time * 1)
+    if @enemy
+      new_angle = @enemy.enemy_heading + (@angle_difference * time / 2)
+      projected.move(@enemy.enemy_heading, @enemy.enemy_speed * time)
+    else
+      projected.move(@enemy.enemy_heading, @enemy.enemy_speed * time)
+    end
     command.turret_heading = sensors.position.heading(projected)
     command.fire(2)
   end
